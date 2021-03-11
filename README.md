@@ -2,7 +2,6 @@
 
 first draft of requests
 
-GET /category/all - list of all supported categories in our app
 GET /category/ - list of available categories (JSON - list of CategoryDto) - крч на руссиче - лист тех категорий, файлы которых сейчас храняться на сервере и их можно запросить
 GET /category/{id}/ - get title of category by id - return JSON - CategoryDTO
 GET /data/{id}/ - get file by category
