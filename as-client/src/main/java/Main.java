@@ -23,7 +23,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String address = "http://localhost:8888/";
+        String address = "http://localhost:8080/";
 
         Scanner scanner = new Scanner(System.in);
 
@@ -33,20 +33,25 @@ public class Main {
             int flag = scanner.nextInt();
 
             if (flag == 1) {
-                System.out.println("Введите путь до файла: ");
+                System.out.print("Введите путь до файла: ");
                 String pathToFile = scanner.nextLine();
+                pathToFile = scanner.nextLine();
                 ResponseDto responseDto = postRequest(address + "/data/", pathToFile);
 
                 // todo
                 if (responseDto.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    System.out.println("Some exception: " + responseDto.getResponseString());
+                    System.out.println("Ошибка: " + responseDto.getResponseString());
                     continue;
+                }
+
+                else {
+                    System.out.println("Файл успешно загружен на сервер");
                 }
             }
 
             if (flag == 2) {
                 System.out.println("Список доступных категорий: ");
-                ResponseDto responseDto = getRequest("/category/");
+                ResponseDto responseDto = getRequest(address + "/category");
 
                 // todo
                 if (responseDto.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -59,16 +64,21 @@ public class Main {
                 CategoryDto[] categoryDto =
                         objectMapper.readValue(categories, CategoryDto[].class);
 
+                if (categoryDto.length == 0) {
+                    System.out.println("В данный момент, загруженные файлы отсутсввуют");
+                    continue;
+                }
+
                 Arrays.stream(categoryDto).forEach(System.out::println);
 
                 int categoryId = scanner.nextInt();
 
-                if (Arrays.stream(categoryDto).anyMatch(category -> category.getId() == categoryId)) {
+                if (Arrays.stream(categoryDto).noneMatch(category -> category.getId() == categoryId)) {
                     System.out.println("В бд нет файла с заданной категорией!");
                     continue;
                 }
 
-                ResponseDto response = getRequest("/data/" + categoryId);
+                ResponseDto response = getRequest(address + "/data/" + categoryId);
 
                 // todo
                 if (response.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -90,8 +100,7 @@ public class Main {
         File f = new File(filePath);
         PostMethod filePost = new PostMethod(mapping);
         Part[] parts = { new FilePart("file", f) };
-        filePost.setRequestEntity(new MultipartRequestEntity(parts,
-                filePost.getParams()));
+        filePost.setRequestEntity(new MultipartRequestEntity(parts, filePost.getParams()));
         HttpClient client = new HttpClient();
         int status = client.executeMethod(filePost);
 
@@ -131,9 +140,22 @@ public class Main {
             throws MalformedURLException {
 
         try {
+            con.connect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
             int responseCode = con.getResponseCode();
-            String responseMessage = con.getResponseMessage();
-            return new ResponseDto(responseCode, responseMessage);
+            BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            br.close();
+
+            return new ResponseDto(responseCode,  sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
             throw new MalformedURLException();
@@ -146,6 +168,7 @@ public class Main {
 
         // always check HTTP response code first
         if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            System.out.println("kek");
             String fileName = "";
             String disposition = conn.getHeaderField("Content-Disposition");
             String contentType = conn.getContentType();
