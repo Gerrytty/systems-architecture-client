@@ -40,7 +40,7 @@ public class Main {
                 String categories = responseDto.getResponseString();
                 CategoryDto[] categoryDto = objectMapper.readValue(categories, CategoryDto[].class);
 
-                if (noFiles(categoryDto)) {
+                if (!noFiles(categoryDto)) {
                     continue;
                 }
 
@@ -49,12 +49,6 @@ public class Main {
                 int categoryId = scanner.nextInt();
 
                 if (!categoryExists(categoryDto, categoryId)) {
-                    continue;
-                }
-
-                ResponseDto response = urLservice.getRequest(address + "data/" + categoryId);
-
-                if (urLservice.serverError(response)) {
                     continue;
                 }
 
