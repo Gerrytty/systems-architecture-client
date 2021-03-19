@@ -1,6 +1,8 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.CategoryDto;
 import dto.ResponseDto;
+import dto.UserDetails;
+import lombok.SneakyThrows;
 
 import java.io.*;
 import java.util.Arrays;
@@ -15,7 +17,23 @@ public class Main {
 
     static String address = "http://localhost:8080/";
 
+    static String token = null;
+
     public static void main(String[] args) throws IOException {
+
+        while (token == null) {
+            System.out.println("Выполните авторизацию/регистрацию");
+            System.out.println("Регистрация - 1 / авторизация - 2");
+            int key = scanner.nextInt();
+            if (key == 1) {
+                auth("reg");
+                System.out.println("Регистрация прошла успешно");
+            }
+            else {
+                auth("auth");
+                System.out.println("Авторизация прошла успешно");
+            }
+        }
 
         while (true) {
 
@@ -88,6 +106,19 @@ public class Main {
             return false;
         }
         return true;
+    }
+
+    @SneakyThrows
+    public static void auth(String mapping) {
+        System.out.println("Введите логин: ");
+        String login = scanner.nextLine();
+        System.out.println("Введите пароль: ");
+        String pass = scanner.nextLine();
+        UserDetails userDetails = new UserDetails(login, pass);
+        ResponseDto responseDto = urLservice.postRequest(address + mapping, objectMapper.writeValueAsString(userDetails));
+        if (!urLservice.serverError(responseDto)) {
+            token = responseDto.getResponseString();
+        }
     }
 
 }
