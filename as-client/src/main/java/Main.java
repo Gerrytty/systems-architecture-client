@@ -1,7 +1,5 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dto.CategoryDto;
-import dto.ResponseDto;
-import dto.UserDetails;
+import dto.*;
 import lombok.SneakyThrows;
 
 import java.io.*;
@@ -25,13 +23,30 @@ public class Main {
             System.out.println("Выполните авторизацию/регистрацию");
             System.out.println("Регистрация - 1 / авторизация - 2");
             int key = scanner.nextInt();
+
+            UserDetails userDetails = auth();
+
+            ResponseDto responseDto;
+
             if (key == 1) {
-                auth("reg");
+                System.out.println("Введите имя");
+                String name = scanner.nextLine();
+                responseDto = urLservice.postRequest("sign_up",
+                        objectMapper.writeValueAsString(
+                                new SignUpRequest(name, userDetails.getLogin(),
+                                userDetails.getPassword())));
                 System.out.println("Регистрация прошла успешно");
             }
             else {
-                auth("auth");
+                responseDto = urLservice.postRequest("sign_up",
+                        objectMapper.writeValueAsString(
+                                new SignInRequest(userDetails.getLogin(),
+                                        userDetails.getPassword())));
                 System.out.println("Авторизация прошла успешно");
+            }
+
+            if (!urLservice.serverError(responseDto)) {
+                token = responseDto.getResponseString();
             }
         }
 
@@ -109,16 +124,12 @@ public class Main {
     }
 
     @SneakyThrows
-    public static void auth(String mapping) {
+    public static UserDetails auth() {
         System.out.println("Введите логин: ");
         String login = scanner.nextLine();
         System.out.println("Введите пароль: ");
         String pass = scanner.nextLine();
-        UserDetails userDetails = new UserDetails(login, pass);
-        ResponseDto responseDto = urLservice.postRequest(address + mapping, objectMapper.writeValueAsString(userDetails));
-        if (!urLservice.serverError(responseDto)) {
-            token = responseDto.getResponseString();
-        }
+        return new UserDetails(login, pass);
     }
 
 }
