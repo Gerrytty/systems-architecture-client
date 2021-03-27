@@ -13,6 +13,9 @@ public class Main {
     static ObjectMapper objectMapper = new ObjectMapper();
     static Scanner scanner = new Scanner(System.in);
 
+    static GetMethod getMethod = new GetMethod(urLservice);
+    static HttpMethodPostFileUpload postMethod = new HttpMethodPostFileUpload();
+
     static String address = "http://localhost:8080/";
 
     static String token = null;
@@ -31,17 +34,17 @@ public class Main {
             if (key == 1) {
                 System.out.println("Введите имя");
                 String name = scanner.nextLine();
-                responseDto = urLservice.postRequest("sign_up",
+                responseDto = postMethod.execute("sign_up",
                         objectMapper.writeValueAsString(
                                 new SignUpRequest(name, userDetails.getLogin(),
-                                userDetails.getPassword())));
+                                userDetails.getPassword())), token);
                 System.out.println("Регистрация прошла успешно");
             }
             else {
-                responseDto = urLservice.postRequest("sign_up",
+                responseDto = postMethod.execute("sign_up",
                         objectMapper.writeValueAsString(
                                 new SignInRequest(userDetails.getLogin(),
-                                        userDetails.getPassword())));
+                                        userDetails.getPassword())), token);
                 System.out.println("Авторизация прошла успешно");
             }
 
@@ -64,7 +67,7 @@ public class Main {
 
             if (flag == 2) {
                 System.out.println("Список доступных категорий: ");
-                ResponseDto responseDto = urLservice.getRequest(address + "category");
+                ResponseDto responseDto = getMethod.execute(address + "category", token, null);
 
                 if (urLservice.serverError(responseDto)) {
                     continue;
@@ -96,7 +99,7 @@ public class Main {
         System.out.print("Введите путь до файла: ");
         String pathToFile = scanner.nextLine();
         pathToFile = scanner.nextLine();
-        ResponseDto responseDto = urLservice.postRequest(address + "/data/", pathToFile);
+        ResponseDto responseDto = postMethod.execute(address + "/data/", pathToFile, token);
 
         if (urLservice.serverError(responseDto)) {
             return false;

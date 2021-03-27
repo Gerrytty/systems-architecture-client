@@ -1,4 +1,5 @@
 import dto.ResponseDto;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
@@ -14,21 +15,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class HttpURLservice {
-
-    // посылаем POST запрос
-    public ResponseDto postRequest(String mapping, String filePath)
-            throws IOException {
-
-        File f = new File(filePath);
-        PostMethod filePost = new PostMethod(mapping);
-        Part[] parts = { new FilePart("file", f) };
-        filePost.setRequestEntity(new MultipartRequestEntity(parts, filePost.getParams()));
-        HttpClient client = new HttpClient();
-        int status = client.executeMethod(filePost);
-
-        return ResponseDto.builder().responseCode(status).build();
-
-    }
 
     public boolean serverError(ResponseDto response) {
         if (response.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -56,18 +42,6 @@ public class HttpURLservice {
         }
 
         return con;
-    }
-
-    // посылаем GET запрос
-    public ResponseDto getRequest(String mapping) {
-        HttpURLConnection con = null;
-        try {
-            con = getUrlConnection(mapping, "GET");
-            return getResponse(con);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return ResponseDto.builder().responseCode(HttpURLConnection.HTTP_BAD_GATEWAY).build();
-        }
     }
 
     public ResponseDto getResponse(HttpURLConnection con) throws MalformedURLException {
