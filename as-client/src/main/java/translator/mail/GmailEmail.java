@@ -4,6 +4,10 @@ import java.util.Properties;
 
 public class GmailEmail implements MailSmtpInterface {
 
+    /***
+     * @return gmail smtp properties
+     ***/
+
     @Override
     public Properties getProps() {
         Properties props = new Properties();
